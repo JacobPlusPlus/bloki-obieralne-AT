@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Program Studiów — Specjalizacje Informatyczne</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --bg2: #111118; --bg3: #18181f; --surface: #1e1e28;
+      --border: rgba(255,255,255,0.07); --border-bright: rgba(255,255,255,0.15);
+      --text: #e8e8f0; --muted: #7070a0; --dim: #3a3a55;
+      --ist: #38bdf8; --ist-dim: rgba(56,189,248,0.12); --ist-mid: rgba(56,189,248,0.35);
+      --io: #4ade80; --io-dim: rgba(74,222,128,0.12); --io-mid: rgba(74,222,128,0.35);
+      --id: #a78bfa; --id-dim: rgba(167,139,250,0.12); --id-mid: rgba(167,139,250,0.35);
+      --isi: #fb923c; --isi-dim: rgba(251,146,60,0.12); --isi-mid: rgba(251,146,60,0.35);
+      --shared: #f0e040; --shared-dim: rgba(240,224,64,0.12); --shared-mid: rgba(240,224,64,0.4);
+      --accent: #ff2a5f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden;
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .orb { position: fixed; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 0; opacity: 0.18; transition: all 1.5s ease; }
+    .orb1 { width: 600px; height: 600px; top: -200px; left: -150px; background: var(--id); }
+    .orb2 { width: 500px; height: 500px; bottom: -150px; right: -100px; background: var(--ist); }
+    .orb3 { width: 300px; height: 300px; top: 40%; left: 40%; background: var(--io); opacity: 0.08; }
+    
+    header { position: relative; z-index: 10; padding: 40px 60px; border-bottom: 1px solid var(--border); }
+    .header-inner { max-width: 1400px; margin: 0 auto; }
+    .eyebrow { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    h1 { font-family: 'Syne', sans-serif; font-size: clamp(36px, 5vw, 72px); font-weight: 800; line-height: 1; letter-spacing: -0.03em; background: linear-gradient(135deg, #fff 40%, var(--muted) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+    .subtitle { font-size: 13px; color: var(--muted); letter-spacing: 0.05em; margin-top: 12px; }
+    
+    .stats-row { display: flex; gap: 32px; margin-top: 32px; flex-wrap: wrap; }
+    .stat { display: flex; flex-direction: column; gap: 2px; }
+    .stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+    .stat-label { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    
+    .controls { position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 60px; transition: transform 0.3s; }
+    .controls-inner { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+    .ctrl-group { display: flex; align-items: center; gap: 0; border-right: 1px solid var(--border); padding: 0 20px; height: 52px; }
+    .ctrl-group:first-child { padding-left: 0; }
+    .ctrl-group:last-child { border-right: none; }
+    .ctrl-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); margin-right: 12px; white-space: nowrap; }
+    .pill-group { display: flex; gap: 4px; }
+    .pill { padding: 5px 14px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .pill:hover { border-color: var(--border-bright); color: var(--text); }
+    
+    .pill.active { color: #000; font-weight: 500; }
+    .pill.p-all.active { background: var(--text); border-color: var(--text); color: #000; }
+    .pill.p-shared.active { background: var(--shared); border-color: var(--shared); color: #000; }
+    .pill.p-unique.active { background: #fff; border-color: #fff; color: #000; }
+    .pill.p-ist.active { background: var(--ist); border-color: var(--ist); color: #000; }
+    .pill.p-io.active { background: var(--io); border-color: var(--io); color: #000; }
+    .pill.p-id.active { background: var(--id); border-color: var(--id); color: #000; }
+    .pill.p-isi.active { background: var(--isi); border-color: var(--isi); color: #000; }
+    .pill.p-s3.active, .pill.p-s4.active, .pill.p-s5.active, .pill.p-s6.active, .pill.p-s7.active { background: var(--text); border-color: var(--text); color: #000; }
+    
+    .search-wrap { flex: 1; padding: 0 20px; height: 52px; display: flex; align-items: center; min-width: 200px; }
+    #search { width: 100%; background: transparent; border: none; outline: none; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; letter-spacing: 0.05em; caret-color: var(--id); }
+    #search::placeholder { color: var(--dim); }
+    .visible-counter { font-size: 11px; color: var(--muted); margin-left: auto; padding: 0 20px; height: 52px; display: flex; align-items: center; white-space: nowrap; }
+    #visible-count { color: var(--text); font-weight: 600; }
+    
+    main { position: relative; z-index: 5; max-width: 1400px; margin: 0 auto; padding: 40px 60px; }
+    
+    .venn-section { display: none; margin-bottom: 40px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; position: relative; }
+    .venn-header { padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; border-bottom: 1px solid transparent; transition: border-color 0.2s; }
+    .venn-header:hover { background: rgba(255,255,255,0.02); }
+    .venn-section.open .venn-header { border-bottom-color: var(--border); }
+    .venn-title { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+    .venn-chevron { font-size: 14px; color: var(--dim); transition: transform 0.25s; line-height: 1; }
+    .venn-section.open .venn-chevron { transform: rotate(180deg); }
+    .venn-body { display: none; padding: 20px 24px 24px; }
+    .venn-section.open .venn-body { display: block; }
+    .venn-hint { font-size: 11px; color: var(--dim); margin-bottom: 16px; letter-spacing: 0.04em; }
+    .venn-picker { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+    .venn-picker-label { font-size: 10px; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-right: 4px; }
+    .vpill { padding: 6px 16px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s; }
+    .vpill:hover { border-color: var(--border-bright); color: var(--text); }
+    .vpill.sel-ist { background: var(--ist); border-color: var(--ist); color: #000; font-weight: 600; }
+    .vpill.sel-io  { background: var(--io);  border-color: var(--io);  color: #000; font-weight: 600; }
+    .vpill.sel-id  { background: var(--id);  border-color: var(--id);  color: #000; font-weight: 600; }
+    .vpill.sel-isi { background: var(--isi); border-color: var(--isi); color: #000; font-weight: 600; }
+    .venn-reset { font-size: 10px; color: var(--accent); border: none; background: none; font-family: 'DM Mono', monospace; cursor: pointer; padding: 6px 0; margin-left: auto; opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+    .venn-reset.vis { opacity: 1; pointer-events: auto; }
+    .venn-result { background: var(--bg3); border-radius: 12px; border: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 16px; min-height: 64px; }
+    .venn-result-empty { color: var(--dim); font-size: 12px; }
+    .venn-result-num { font-family: 'Syne', sans-serif; font-size: 42px; font-weight: 800; line-height: 1; min-width: 52px; text-align: center; }
+    .venn-result-info { display: flex; flex-direction: column; gap: 4px; }
+    .venn-result-combo { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; }
+    .venn-result-sub { font-size: 11px; color: var(--muted); }
+    .venn-result-btn { margin-left: auto; padding: 7px 16px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); font-family: 'DM Mono', monospace; font-size: 11px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .venn-result-btn:hover { border-color: var(--border-bright); background: rgba(255,255,255,0.05); }
+    .venn-result-btn.applied { background: var(--shared); border-color: var(--shared); color: #000; font-weight: 600; }
+    .oc-dots { display: flex; gap: 4px; margin-bottom: 8px; }
+    .oc-dot { width: 8px; height: 8px; border-radius: 50%; }
+    
+    .legend { display: flex; gap: 20px; margin-bottom: 32px; flex-wrap: wrap; padding: 16px 20px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    
+    .semester-block { margin-bottom: 48px; }
+    .sem-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .sem-number { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+    .sem-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; color: var(--text); }
+    .sem-count { margin-left: auto; font-size: 11px; color: var(--muted); }
+    .subject-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+    .subject-card { position: relative; overflow: hidden; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); padding: 14px 16px 14px 44px; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; animation: fadeIn 0.35s ease both; display: flex; flex-direction: column; justify-content: center;}
+    .subject-card:hover { transform: translateY(-2px); border-color: var(--border-bright); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+    .subject-card.hidden { display: none; }
+    .subject-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 10px 0 0 10px; }
+    .card-shared::before { background: var(--shared); }
+    .card-ist::before { background: var(--ist); }
+    .card-io::before { background: var(--io); }
+    .card-id::before { background: var(--id); }
+    .card-isi::before { background: var(--isi); }
+    
+    .dots-col { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 3px; align-items: center; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dim); transition: background 0.2s; }
+    .dot.on-ist { background: var(--ist); }
+    .dot.on-io { background: var(--io); }
+    .dot.on-id { background: var(--id); }
+    .dot.on-isi { background: var(--isi); }
+    
+    .card-name { font-size: 12px; color: var(--text); line-height: 1.5; padding-right: 50px; margin-bottom: 6px;}
+    .card-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .ects-tag { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.05em; }
+    .tag-shared { background: var(--shared-dim); color: var(--shared); }
+    .tag-ist { background: var(--ist-dim); color: var(--ist); }
+    .tag-io { background: var(--io-dim); color: var(--io); }
+    .tag-id { background: var(--id-dim); color: var(--id); }
+    .tag-isi { background: var(--isi-dim); color: var(--isi); }
+    
+    .spec-badge { font-size: 9px; padding: 2px 6px; border-radius: 3px; letter-spacing: 0.05em; text-transform: uppercase; font-family: 'Syne', sans-serif; font-weight: 600; }
+    .badge-shared { background: var(--shared-mid); color: #000; }
+    .badge-ist { background: var(--ist-dim); color: var(--ist); border: 1px solid rgba(56,189,248,0.25); }
+    .badge-io { background: var(--io-dim); color: var(--io); border: 1px solid rgba(74,222,128,0.25); }
+    .badge-id { background: var(--id-dim); color: var(--id); border: 1px solid rgba(167,139,250,0.25); }
+    .badge-isi { background: var(--isi-dim); color: var(--isi); border: 1px solid rgba(251,146,60,0.25); }
+    
+    .ects-corner { position: absolute; top: 12px; right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 1px; }
+    
+    .ects-val { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 700; line-height: 1.1; }
+    .ects-unit { font-size: 8px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .card-shared { background: linear-gradient(135deg, var(--surface) 60%, rgba(240,224,64,0.04)); }
+    .card-shared .ects-val { color: var(--shared); }
+    .card-ist .ects-val { color: var(--ist); }
+    .card-io .ects-val { color: var(--io); }
+    .card-id .ects-val { color: var(--id); }
+    .card-isi .ects-val { color: var(--isi); }
+
+    .empty-state { display: none; text-align: center; padding: 80px 20px; color: var(--dim); font-size: 13px; }
+    .empty-state.visible { display: block; }
+    .empty-big { font-family: 'Syne', sans-serif; font-size: 48px; font-weight: 800; display: block; margin-bottom: 8px; color: var(--surface); }
+    
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 2px; }
+    
+    @media (max-width: 768px) {
+      header { padding: 30px 20px; text-align: left; }
+      h1 { font-size: 34px; }
+      .stats-row { gap: 12px; margin-top: 24px; display: grid; grid-template-columns: repeat(3, 1fr); }
+      .stat-val { font-size: 22px; }
+      
+      .controls { 
+        position: sticky; 
+        top: 0; 
+        padding: 10px 15px; 
+        background: rgba(10,10,15,0.95);
+        border-bottom: 1px solid var(--border);
+      }
+      .controls-inner { 
+        flex-direction: column; 
+        align-items: stretch; 
+        gap: 10px; 
+      }
+      .ctrl-group { 
+        border-right: none; 
+        border-bottom: 1px solid rgba(255,255,255,0.04); 
+        padding: 0 0 8px 0; 
+        height: auto; 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 6px; 
+        width: 100%;
+      }
+      .ctrl-group:last-of-type { border-bottom: none; }
+      .ctrl-label { margin-bottom: 2px; font-size: 8px; }
+      
+      .pill-group { 
+        overflow-x: auto; 
+        width: 100%; 
+        padding-bottom: 4px; 
+        display: flex;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+      }
+      .pill-group::-webkit-scrollbar { display: none; }
+      .pill { padding: 5px 12px; font-size: 10px; flex-shrink: 0; }
+      
+      .search-wrap { 
+        padding: 0; 
+        height: 36px; 
+        width: 100%; 
+        border-bottom: 1px solid var(--border);
+      }
+      #search { font-size: 13px; }
+      
+      .visible-counter { 
+        margin-left: 0; 
+        padding: 0; 
+        height: auto; 
+        width: 100%; 
+        justify-content: flex-end; 
+        font-size: 10px;
+      }
+      
+      main { padding: 24px 15px; }
+      .sem-header { flex-wrap: wrap; gap: 4px; }
+      .sem-title { font-size: 14px; width: 100%; }
+      .sem-count { margin-left: 0; font-size: 10px; width: 100%; margin-top: 2px; }
+      
+      .subject-grid { grid-template-columns: 1fr; gap: 8px; }
+      .subject-card { padding: 12px 14px 12px 34px; }
+      .dots-col { left: 10px; }
+      .card-name { font-size: 13px; padding-right: 45px; margin-bottom: 8px; font-weight: 400; }
+      .ects-corner { top: 12px; right: 12px; }
+      .ects-val { font-size: 18px; }
+      
+      .legend { padding: 12px; gap: 12px; }
+      .legend-item { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+
+  <header>
+    <div class="header-inner">
+      <p class="eyebrow">Informatyka — Program studiów inżynierskich</p>
+      <h1>Mapa Specjalizacji</h1>
+      <p class="subtitle">Semestr 3 → 7 &nbsp;·&nbsp; Przedmioty wspólne i unikalne &nbsp;·&nbsp; Filtry i wyszukiwanie</p>
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-val" style="color:var(--shared)" id="stat-shared">0</span>
+          <span class="stat-label">Wspólnych</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" style="color:var(--ist)" id="stat-ist">0</span>
+          <span class="stat-label">Tylko IST</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" style="color:var(--io)" id="stat-io">0</span>
+          <span class="stat-label">Tylko IO</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" style="color:var(--id)" id="stat-id">0</span>
+          <span class="stat-label">Tylko ID</span>
+        </div>
+        <div class="stat">
+          <span class="stat-val" style="color:var(--isi)" id="stat-isi">0</span>
+          <span class="stat-label">Tylko ISI</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls" id="controls-bar">
+    <div class="controls-inner">
+      <div class="ctrl-group">
+        <span class="ctrl-label">Typ</span>
+        <div class="pill-group">
+          <button class="pill p-all active" data-filter-type="sharing" data-filter-val="all">Wszystkie</button>
+          <button class="pill p-shared" data-filter-type="sharing" data-filter-val="shared">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--shared);margin-right:4px;vertical-align:1px"></span>Wspólne
+          </button>
+          <button class="pill p-unique" data-filter-type="sharing" data-filter-val="unique">Unikalne</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Spec. (Opcjonalnie)</span>
+        <div class="pill-group">
+          <button class="pill p-ist" data-filter-type="spec" data-filter-val="ist">IST</button>
+          <button class="pill p-io" data-filter-type="spec" data-filter-val="io">IO</button>
+          <button class="pill p-id" data-filter-type="spec" data-filter-val="id">ID</button>
+          <button class="pill p-isi" data-filter-type="spec" data-filter-val="isi">ISI</button>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <span class="ctrl-label">Sem.</span>
+        <div class="pill-group">
+          <button class="pill p-s3" data-filter-type="sem" data-filter-val="3">S3</button>
+          <button class="pill p-s4" data-filter-type="sem" data-filter-val="4">S4</button>
+          <button class="pill p-s5" data-filter-type="sem" data-filter-val="5">S5</button>
+          <button class="pill p-s6" data-filter-type="sem" data-filter-val="6">S6</button>
+          <button class="pill p-s7" data-filter-type="sem" data-filter-val="7">S7</button>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <input type="text" id="search" placeholder="Szukaj przedmiotu…">
+      </div>
+      <div class="visible-counter">
+        <span id="visible-count">—</span>&nbsp;przedmiotów
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <div class="venn-section" id="venn-section">
+      <div class="venn-header" id="venn-header">
+        <div class="venn-title">
+          <span class="venn-chevron">▾</span>
+          Współdzielenie przedmiotów między specjalizacjami
+        </div>
+      </div>
+      <div class="venn-body" id="venn-body">
+        <p class="venn-hint">Wybierz 2 lub więcej specjalizacji, żeby zobaczyć ile przedmiotów mają dokładnie wspólnych.</p>
+        <div class="venn-picker" id="venn-picker">
+          <span class="venn-picker-label">Spec.</span>
+          <button class="vpill" data-spec="ist">IST</button>
+          <button class="vpill" data-spec="io">IO</button>
+          <button class="vpill" data-spec="id">ID</button>
+          <button class="vpill" data-spec="isi">ISI</button>
+          <button class="venn-reset" id="venn-reset">Wyczyść ✕</button>
+        </div>
+        <div class="venn-result" id="venn-result">
+          <span class="venn-result-empty">← Zaznacz min. 2 specjalizacje</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--shared)"></div>Wspólny (≥2 spec.)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--ist)"></div>IST — Inżynieria Systemów Teleinformatycznych</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--io)"></div>IO — Inżynieria Oprogramowania</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--id)"></div>ID — Inżynieria Danych</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--isi)"></div>ISI — Inżynieria Systemów Inteligentnych i IoT</div>
+    </div>
+    
+    <div id="subjects-container"></div>
+    
+    <div class="empty-state" id="empty-state">
+      <span class="empty-big">∅</span>
+      Brak wyników dla wybranych filtrów
+    </div>
+  </main>
+
+  <script>
+    const RAW = [
+      // ── SEM 3 — WSPÓLNE DLA WSZYSTKICH ──
+      { name: 'Bazy danych', sem: 3, specs: ['ist','io','id','isi'], ects: {ist:5,io:5,id:5,isi:5} },
+      { name: 'Lektorat języka obcego I (ang/fra/niem/ros/wło)', sem: 3, specs: ['ist','io','id','isi'], ects: {ist:2,io:2,id:2,isi:2} },
+      { name: 'Paradygmaty programowania', sem: 3, specs: ['ist','io','id','isi'], ects: {ist:5,io:5,id:5,isi:5} },
+      { name: 'Programowanie systemów mobilnych', sem: 3, specs: ['ist','io','id','isi'], ects: {ist:3,io:3,id:3,isi:3} },
+      { name: 'Systemy operacyjne', sem: 3, specs: ['ist','io','id','isi'], ects: {ist:3,io:3,id:3,isi:3} },
+      // ── SEM 3 — SPECJALIZACYJNE ──
+      { name: 'Analiza i przetwarzanie sygnałów', sem: 3, specs: ['ist','id','isi'], ects: {ist:3,id:3,isi:3} },
+      { name: 'Systemy i sieci radiokomunikacyjne', sem: 3, specs: ['ist'], ects: {ist:6} },
+      { name: 'Inżynieria oprogramowania', sem: 3, specs: ['io'], ects: {io:4} },
+      { name: 'Metodyki wytwarzania oprogramowania', sem: 3, specs: ['io'], ects: {io:2} },
+      { name: 'Projektowanie interfejsów użytkownika', sem: 3, specs: ['io','isi'], ects: {io:3,isi:3} },
+      { name: 'Technologie obiektowe i komponentowe', sem: 3, specs: ['io'], ects: {io:3} },
+      { name: 'Inteligencja obliczeniowa', sem: 3, specs: ['id'], ects: {id:3} },
+      { name: 'Statystyczna analiza danych', sem: 3, specs: ['id'], ects: {id:3} },
+      { name: 'Zaawansowane programowanie systemów wbudowanych', sem: 3, specs: ['isi'], ects: {isi:3} },
+      // ── SEM 4 — WSPÓLNE DLA WSZYSTKICH ──
+      { name: 'Badania operacyjne', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:4,io:4,id:4,isi:4} },
+      { name: 'Grafika 3D i programowanie kart graficznych', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:2,io:2,id:2,isi:2} },
+      { name: 'Lektorat języka obcego II', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:1,io:1,id:1,isi:1} },
+      { name: 'Ochrona własności intelektualnej', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:1,io:1,id:1,isi:1} },
+      { name: 'Podstawy przedsiębiorczości i zarządzania', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:2,io:2,id:2,isi:2} },
+      { name: 'Programowanie systemów mobilnych II', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:1,io:1,id:1,isi:1} },
+      { name: 'Przetwarzanie obrazów cyfrowych', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:3,io:3,id:3,isi:3} },
+      { name: 'Sieci komputerowe', sem: 4, specs: ['ist','io','id','isi'], ects: {ist:2,io:2,id:2,isi:2} },
+      // ── SEM 4 — SPECJALIZACYJNE ──
+      { name: 'Architektury systemów serwerowych', sem: 4, specs: ['ist'], ects: {ist:4} },
+      { name: 'Radio programowalne SDR', sem: 4, specs: ['ist'], ects: {ist:3} },
+      { name: 'Systemy i sieci radiokomunikacyjne II', sem: 4, specs: ['ist'], ects: {ist:5} },
+      { name: 'Systemy wirtualizacji', sem: 4, specs: ['ist'], ects: {ist:4} },
+      { name: 'Bazy danych II', sem: 4, specs: ['io','id'], ects: {io:2,id:2} },
+      { name: 'Inżynieria oprogramowania II', sem: 4, specs: ['io'], ects: {io:1} },
+      { name: 'Inżynieria procesów biznesowych i systemów regułowych', sem: 4, specs: ['io'], ects: {io:3} },
+      { name: 'Kryptografia i bezpieczeństwo aplikacji', sem: 4, specs: ['io'], ects: {io:3} },
+      { name: 'Modelowanie i symulacje komputerowe', sem: 4, specs: ['io','isi'], ects: {io:5,isi:5} },
+      { name: 'Projektowanie interfejsów użytkownika II', sem: 4, specs: ['io','isi'], ects: {io:1,isi:1} },
+      { name: 'Technologie obiektowe i komponentowe II', sem: 4, specs: ['io'], ects: {io:1} },
+      { name: 'Grafy i sieci', sem: 4, specs: ['id'], ects: {id:5} },
+      { name: 'Inżynieria wiedzy', sem: 4, specs: ['id'], ects: {id:4} },
+      { name: 'Matematyczne aspekty uczenia maszynowego', sem: 4, specs: ['id'], ects: {id:4} },
+      { name: 'Statystyczna analiza danych II', sem: 4, specs: ['id'], ects: {id:1} },
+      { name: 'Technologie webowe w aplikacjach internetu rzeczy', sem: 4, specs: ['isi'], ects: {isi:4} },
+      { name: 'Zaawansowane programowanie systemów wbudowanych II', sem: 4, specs: ['isi'], ects: {isi:1} },
+      // ── SEM 5 — WSPÓLNE DLA WSZYSTKICH ──
+      { name: 'Lektorat języka obcego III (ang/fra/niem/ros/wło)', sem: 5, specs: ['ist','io','id','isi'], ects: {ist:3,io:3,id:3,isi:3} },
+      { name: 'Grafika 3D i programowanie kart graficznych II', sem: 5, specs: ['ist','io','id','isi'], ects: {ist:1,io:1,id:1,isi:1} },
+      // ── SEM 5 — SPECJALIZACYJNE ──
+      { name: 'Algorytmy i metody optymalizacji', sem: 5, specs: ['io','id','isi'], ects: {io:5,id:5,isi:5} },
+      { name: 'Uczenie maszynowe', sem: 5, specs: ['io','id','isi'], ects: {io:4,id:5,isi:4} },
+      { name: 'Big data i hurtownie danych', sem: 5, specs: ['io'], ects: {io:4} },
+      { name: 'Big data, hurtownie danych i przetwarzanie rozproszone', sem: 5, specs: ['id'], ects: {id:5} },
+      { name: 'Big data i przetwarzanie rozproszone', sem: 5, specs: ['isi'], ects: {isi:4} },
+      { name: 'Inżynieria wiedzy II', sem: 5, specs: ['io','id','isi'], ects: {io:1,id:1,isi:1} },
+      { name: 'Technologie aplikacji webowych', sem: 5, specs: ['io'], ects: {io:4} },
+      { name: 'Tworzenie gier', sem: 5, specs: ['io'], ects: {io:4} },
+      { name: 'Wirtualna rzeczywistość', sem: 5, specs: ['io','isi'], ects: {io:4,isi:4} },
+      { name: 'Zaawansowane programowanie systemów mobilnych', sem: 5, specs: ['io','isi'], ects: {io:4,isi:4} },
+      { name: 'Inż. proc. biznesowych i sys. regułowych II', sem: 5, specs: ['io'], ects: {io:1} },
+      { name: 'Administracja i bezpieczeństwo sys. serwerowych', sem: 5, specs: ['ist'], ects: {ist:3} },
+      { name: 'Bezprzewodowe sieci transmisji danych', sem: 5, specs: ['ist'], ects: {ist:3} },
+      { name: 'Kryptografia oraz bezpieczeństwo sieci i sys. inf.', sem: 5, specs: ['ist'], ects: {ist:4} },
+      { name: 'Sieci komputerowe II', sem: 5, specs: ['ist'], ects: {ist:5} },
+      { name: 'Sieci sensoryczne', sem: 5, specs: ['ist','isi'], ects: {ist:3,isi:3} },
+      { name: 'Systemy i sieci radiokomunikacyjne III', sem: 5, specs: ['ist'], ects: {ist:1} },
+      { name: 'Systemy teleinformatyki', sem: 5, specs: ['ist'], ects: {ist:2} },
+      { name: 'Systemy wirtualizacji II', sem: 5, specs: ['ist'], ects: {ist:1} },
+      { name: 'Analiza i przetwarzanie danych pomiarowych', sem: 5, specs: ['id','isi'], ects: {id:5,isi:5} },
+      { name: 'Ekonometria', sem: 5, specs: ['id'], ects: {id:5} },
+      { name: 'Modele matematyki finansowej', sem: 5, specs: ['id'], ects: {id:5} },
+      { name: 'Elektronika cyfrowa', sem: 5, specs: ['isi'], ects: {isi:4} },
+      { name: 'Programowanie systemów autonomicznych', sem: 5, specs: ['isi'], ects: {isi:5} },
+      { name: 'Prog. sys. inteligentnych i IoT II', sem: 5, specs: ['isi'], ects: {isi:1} },
+      { name: 'Projektowanie układów elektronicznych', sem: 5, specs: ['isi'], ects: {isi:3} },
+      // ── SEM 6 — WSPÓLNE DLA WSZYSTKICH ──
+      { name: 'Praktyka zawodowa (6 miesięcy)', sem: 6, specs: ['ist','io','id','isi'], ects: {ist:16,io:16,id:16,isi:16} },
+      // ── SEM 6 — SPECJALIZACYJNE ──
+      { name: 'Zaawansowane uczenie maszynowe', sem: 6, specs: ['io','id','isi'], ects: {io:4,id:4,isi:4} },
+      { name: 'Uczenie maszynowe II', sem: 6, specs: ['io','id','isi'], ects: {io:1,id:1,isi:1} },
+      { name: 'Programowanie systemów rozproszonych', sem: 6, specs: ['ist','io'], ects: {ist:4,io:4} },
+      { name: 'Testowanie i jakość oprogramowania', sem: 6, specs: ['io','isi'], ects: {io:5,isi:5} },
+      { name: 'Automatyzacja wytwarzania oprogramowania', sem: 6, specs: ['io'], ects: {io:4} },
+      { name: 'Języki formalne i kompilatory', sem: 6, specs: ['io'], ects: {io:4} },
+      { name: 'Technologie aplikacji webowych II', sem: 6, specs: ['io'], ects: {io:1} },
+      { name: 'Tworzenie gier II', sem: 6, specs: ['io','isi'], ects: {io:1,isi:1} },
+      { name: 'Zaawansowane programowanie systemów mobilnych II', sem: 6, specs: ['io'], ects: {io:1} },
+      { name: 'Big data i hurtownie danych II', sem: 6, specs: ['io'], ects: {io:1} },
+      { name: 'Bezprzewodowe sieci transmisji danych II', sem: 6, specs: ['ist'], ects: {ist:1} },
+      { name: 'Rozległe sieci komputerowe', sem: 6, specs: ['ist'], ects: {ist:4} },
+      { name: 'Sieci sensoryczne II', sem: 6, specs: ['ist','isi'], ects: {ist:1,isi:1} },
+      { name: 'Systemy lokalizacji', sem: 6, specs: ['ist','isi'], ects: {ist:4,isi:4} },
+      { name: 'Analiza danych medycznych', sem: 6, specs: ['id'], ects: {id:3} },
+      { name: 'Inżynieria procesów uczenia maszynowego', sem: 6, specs: ['id'], ects: {id:3} },
+      { name: 'Big data i hurtownie danych II (ID)', sem: 6, specs: ['id'], ects: {id:2} },
+      { name: 'Analiza i przetwarzanie danych medycznych', sem: 6, specs: ['isi'], ects: {isi:5} },
+      { name: 'Analiza i przetwarzanie danych pomiarowych II', sem: 6, specs: ['isi'], ects: {isi:1} },
+      { name: 'Big data i przetwarzanie rozproszone II', sem: 6, specs: ['isi'], ects: {isi:1} },
+      { name: 'Elektronika cyfrowa II', sem: 6, specs: ['isi'], ects: {isi:1} },
+      { name: 'Programowanie systemów autonomicznych II', sem: 6, specs: ['isi'], ects: {isi:1} },
+      { name: 'Projektowanie układów elektronicznych II', sem: 6, specs: ['isi'], ects: {isi:1} },
+      { name: 'Systemy biomedyczne', sem: 6, specs: ['isi'], ects: {isi:5} },
+      // ── SEM 7 — WSPÓLNE DLA WSZYSTKICH ──
+      { name: 'Laboratorium dyplomowe', sem: 7, specs: ['ist','io','id','isi'], ects: {ist:2,io:2,id:2,isi:2} },
+      { name: 'Praktyka zawodowa (3 miesiące)', sem: 7, specs: ['ist','io','id','isi'], ects: {ist:16,io:16,id:16,isi:16} },
+      { name: 'Przygotowanie pracy dyplomowej', sem: 7, specs: ['ist','io','id','isi'], ects: {ist:8,io:8,id:8,isi:8} },
+      { name: 'Seminarium dyplomowe', sem: 7, specs: ['ist','io','id','isi'], ects: {ist:2,io:2,id:2,isi:2} },
+      // ── SEM 7 — SPECJALIZACYJNE ──
+      { name: 'Zaawansowane uczenie maszynowe II', sem: 7, specs: ['io','id','isi'], ects: {io:1,id:1,isi:1} },
+      { name: 'Programowanie systemów rozproszonych II', sem: 7, specs: ['ist','io'], ects: {ist:1,io:1} },
+      { name: 'Inżynieria wiedzy II (s7)', sem: 7, specs: ['io','isi'], ects: {io:1,isi:1} },
+      { name: 'Systemy lokalizacji II', sem: 7, specs: ['ist','isi'], ects: {ist:1,isi:1} },
+      { name: 'Automatyzacja wytwarzania oprogramowania II', sem: 7, specs: ['io'], ects: {io:1} },
+      { name: 'Języki formalne i kompilatory II', sem: 7, specs: ['io'], ects: {io:1} },
+      { name: 'Testowanie i jakość oprogramowania II', sem: 7, specs: ['io','isi'], ects: {io:1,isi:1} },
+      { name: 'Inżynieria procesów uczenia maszynowego II', sem: 7, specs: ['id'], ects: {id:1} },
+      { name: 'Analiza i przetwarzanie danych medycznych II', sem: 7, specs: ['isi'], ects: {isi:1} },
+      { name: 'Systemy biomedyczne II', sem: 7, specs: ['isi'], ects: {isi:1} },
+    ];
+
+    const SPECS = ['ist','io','id','isi'];
+    const SPEC_LABELS = { ist:'IST', io:'IO', id:'ID', isi:'ISI' };
+    const SEM_NAMES = {
+      3: 'Rok 2 — Semestr 3',
+      4: 'Rok 2 — Semestr 4',
+      5: 'Rok 3 — Semestr 5',
+      6: 'Rok 3 / 4 — Semestr 6',
+      7: 'Rok 4 — Semestr 7',
+    };
+    
+    RAW.forEach(d => {
+      d.sharing = d.specs.length >= 2 ? 'shared' : 'unique';
+      d.id = d.name.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+    });
+
+    let state = {
+      sharing: 'all',
+      specs: [],
+      exactSpecs: null,
+      sems: [],
+      search: '',
+    };
+
+    function matchesFilter(d) {
+      if (state.sharing === 'shared' && d.sharing !== 'shared') return false;
+      if (state.sharing === 'unique' && d.sharing !== 'unique') return false;
+
+      if (state.exactSpecs) {
+        if (d.specs.length !== state.exactSpecs.length) return false;
+        if (!state.exactSpecs.every(s => d.specs.includes(s))) return false;
+      }
+      else if (state.specs.length > 0) {
+        if (state.sharing === 'shared') {
+          if (!state.specs.every(s => d.specs.includes(s))) return false;
+        } else {
+          if (!state.specs.some(s => d.specs.includes(s))) return false;
+        }
+      }
+
+      if (state.sems.length > 0 && !state.sems.includes(d.sem)) return false;
+      if (state.search) {
+        const q = state.search.toLowerCase();
+        if (!d.name.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    }
+
+    const SPEC_ORDER = ['ist','io','id','isi'];
+    let vennSelected = [];
+
+    document.getElementById('venn-header').addEventListener('click', () => {
+      document.getElementById('venn-section').classList.toggle('open');
+    });
+
+    function updateVennResult() {
+      const resultEl = document.getElementById('venn-result');
+      const resetBtn = document.getElementById('venn-reset');
+      resetBtn.classList.toggle('vis', vennSelected.length > 0);
+
+      if (vennSelected.length < 2) {
+        const msg = vennSelected.length === 1
+          ? '← Zaznacz jeszcze min. 1 specjalizację'
+          : '← Zaznacz min. 2 specjalizacje';
+        resultEl.innerHTML = `<span class="venn-result-empty">${msg}</span>`;
+        if (state.exactSpecs) { state.exactSpecs = null; updateUIState(); }
+        return;
+      }
+
+      const sorted = vennSelected.slice().sort((a,b) => SPEC_ORDER.indexOf(a)-SPEC_ORDER.indexOf(b));
+      const count = RAW.filter(d =>
+        d.specs.length === sorted.length && sorted.every(s => d.specs.includes(s))
+      ).length;
+
+      const isApplied = state.exactSpecs && state.exactSpecs.length === sorted.length && sorted.every(s => state.exactSpecs.includes(s));
+      const label = sorted.length === 4 ? 'Wszystkie 4 specjalizacje' : sorted.map(s=>s.toUpperCase()).join(' + ');
+      const dotColor = sorted.length >= 3 ? 'var(--shared)' : `var(--${sorted[0]})`;
+
+      resultEl.innerHTML = `
+        <span class="venn-result-num" style="color:${dotColor}">${count}</span>
+        <div class="venn-result-info">
+          <span class="venn-result-combo" style="color:${dotColor}">${label}</span>
+          <span class="venn-result-sub">przedmiotów wspólnych dokładnie dla tej kombinacji</span>
+        </div>
+        <button class="venn-result-btn ${isApplied?'applied':''}" id="venn-apply-btn">
+          ${isApplied ? '✓ Filtr aktywny' : 'Pokaż te przedmioty →'}
+        </button>
+      `;
+
+      document.getElementById('venn-apply-btn').addEventListener('click', () => {
+        if (isApplied) {
+          state.exactSpecs = null;
+        } else {
+          state.exactSpecs = sorted;
+          state.sharing = 'all';
+          state.specs = [];
+          syncPillsToState();
+        }
+        updateVennResult();
+        updateUIState();
+      });
+    }
+
+    document.querySelectorAll('#venn-picker .vpill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const spec = btn.dataset.spec;
+        if (vennSelected.includes(spec)) {
+          vennSelected = vennSelected.filter(s => s !== spec);
+          btn.classList.remove(`sel-${spec}`);
+        } else {
+          vennSelected.push(spec);
+          btn.classList.add(`sel-${spec}`);
+        }
+        updateVennResult();
+      });
+    });
+
+    document.getElementById('venn-reset').addEventListener('click', () => {
+      vennSelected = [];
+      document.querySelectorAll('#venn-picker .vpill').forEach(b => b.className = 'vpill');
+      state.exactSpecs = null;
+      updateVennResult();
+      updateUIState();
+    });
+
+    function syncPillsToState() {
+      document.querySelectorAll('[data-filter-type="spec"]').forEach(p => {
+        const v = p.dataset.filterVal;
+        p.classList.toggle('active', state.specs.includes(v));
+      });
+      document.querySelectorAll('[data-filter-type="sharing"]').forEach(p => {
+        p.classList.toggle('active', p.dataset.filterVal === state.sharing);
+      });
+    }
+
+    function createSubjectCardHTML(d) {
+      const cardClass = d.sharing === 'shared' ? 'card-shared' : `card-${d.specs[0]}`;
+      const maxEcts = Math.max(...Object.values(d.ects));
+      
+      const badgeContent = d.sharing === 'shared'
+        ? `<span class="spec-badge badge-shared">Wspólny</span>`
+        : `<span class="spec-badge badge-${d.specs[0]}">${SPEC_LABELS[d.specs[0]]}</span>`;
+        
+      const dots = SPECS.map(s => `<div class="dot ${d.specs.includes(s)?'on-'+s:''}"></div>`).join('');
+      
+      const ectsPerSpec = d.sharing === 'shared'
+        ? SPECS.filter(s => d.specs.includes(s)).map(s =>
+            `<span class="ects-tag tag-${s}">${SPEC_LABELS[s]}: ${d.ects[s]}</span>`
+          ).join('')
+        : `<span class="ects-tag tag-${d.specs[0]}">${maxEcts} ECTS</span>`;
+      
+      return `
+        <div class="subject-card ${cardClass}" data-id="${d.id}" data-sem="${d.sem}" data-sharing="${d.sharing}">
+          <div class="dots-col">${dots}</div>
+          <div class="ects-corner">
+            <span class="ects-val">${maxEcts}</span>
+            <span class="ects-unit">ECTS</span>
+          </div>
+          <div class="card-name">${d.name}</div>
+          <div class="card-meta">
+            ${badgeContent}
+            ${d.sharing === 'shared' ? ectsPerSpec : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMapSubjects() {
+      const container = document.getElementById('subjects-container');
+      container.innerHTML = '';
+      const sems = [3,4,5,6,7];
+      
+      sems.forEach(sem => {
+        const items = RAW.filter(d => d.sem === sem);
+        if (!items.length) return;
+        
+        const block = document.createElement('div');
+        block.className = 'semester-block map-sem-block';
+        block.dataset.sem = sem;
+        block.innerHTML = `
+          <div class="sem-header">
+            <span class="sem-number">Semestr ${sem}</span>
+            <span class="sem-title">${SEM_NAMES[sem]}</span>
+            <span class="sem-count" id="sem-count-${sem}"></span>
+          </div>
+          <div class="subject-grid" id="grid-${sem}">
+            ${items.map(d => createSubjectCardHTML(d)).join('')}
+          </div>
+        `;
+        container.appendChild(block);
+      });
+      applyFilters();
+    }
+
+    function applyFilters() {
+      let visCount = 0;
+      const allCards = document.querySelectorAll('#subjects-container .subject-card');
+      
+      allCards.forEach(card => {
+        const d = RAW.find(item => item.id === card.dataset.id);
+        if (d && matchesFilter(d)) {
+          card.classList.remove('hidden');
+          visCount++;
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+
+      document.querySelectorAll('.map-sem-block').forEach(block => {
+        const sem = block.dataset.sem;
+        const visibleInSem = block.querySelectorAll('.subject-card:not(.hidden)').length;
+        const countLabel = block.querySelector('.sem-count');
+        if (countLabel) countLabel.textContent = visibleInSem + ' przedmiotów';
+        block.style.display = visibleInSem === 0 ? 'none' : 'block';
+      });
+
+      document.getElementById('visible-count').textContent = visCount;
+      const emptyState = document.getElementById('empty-state');
+      if (visCount === 0) emptyState.classList.add('visible');
+      else emptyState.classList.remove('visible');
+    }
+
+    function updatePills() {
+      document.querySelectorAll('.pill').forEach(btn => btn.classList.remove('active'));
+
+      if (state.sharing === 'all') document.querySelector('.p-all').classList.add('active');
+      if (state.sharing === 'shared') document.querySelector('.p-shared').classList.add('active');
+      if (state.sharing === 'unique') document.querySelector('.p-unique').classList.add('active');
+
+      state.specs.forEach(s => {
+        const p = document.querySelector(`.p-${s}`);
+        if(p) p.classList.add('active');
+      });
+
+      state.sems.forEach(sem => {
+        const p = document.querySelector(`.p-s${sem}`);
+        if(p) p.classList.add('active');
+      });
+    }
+
+    function updateUIState() {
+      updatePills();
+      applyFilters();
+    }
+
+    function updateStats() {
+      const counts = { shared:0, ist:0, io:0, id:0, isi:0 };
+      RAW.forEach(d => {
+        if (d.sharing === 'shared') counts.shared++;
+        else counts[d.specs[0]]++;
+      });
+      document.getElementById('stat-shared').textContent = counts.shared;
+      document.getElementById('stat-ist').textContent = counts.ist;
+      document.getElementById('stat-io').textContent = counts.io;
+      document.getElementById('stat-id').textContent = counts.id;
+      document.getElementById('stat-isi').textContent = counts.isi;
+    }
+
+    document.querySelectorAll('.pill').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        state.exactSpecs = null;
+        updateVennResult();
+
+        const type = e.currentTarget.dataset.filterType;
+        const val = e.currentTarget.dataset.filterVal;
+
+        if (type === 'sharing') {
+          state.sharing = val;
+        } else if (type === 'spec') {
+          if (state.specs.includes(val)) {
+            state.specs = state.specs.filter(s => s !== val);
+          } else {
+            state.specs.push(val);
+          }
+        } else if (type === 'sem') {
+          // TUTAJ BYŁ BŁĄD - TERAZ JEST POPRAWIONE
+          const semVal = parseInt(val);
+          if (state.sems.includes(semVal)) {
+            state.sems = state.sems.filter(s => s !== semVal);
+          } else {
+            state.sems.push(semVal);
+          }
+        }
+        updateUIState();
+      });
+    });
+
+    document.getElementById('search').addEventListener('input', (e) => {
+      state.search = e.target.value;
+      applyFilters();
+    });
+
+    let consecutiveSpaces = 0;
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement === document.getElementById('search')) {
+        return;
+      }
+      
+      if (e.key === ' ' || e.code === 'Space') {
+        consecutiveSpaces++;
+        if (consecutiveSpaces === 3) {
+          const vennSection = document.getElementById('venn-section');
+          if (vennSection) {
+            vennSection.style.display = 'block';
+          }
+          consecutiveSpaces = 0;
+        }
+      } else {
+        consecutiveSpaces = 0;
+      }
+    });
+
+    updateStats();
+    renderMapSubjects();
+  </script>
+</body>
+</html>
