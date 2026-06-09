@@ -58,7 +58,7 @@ Projekt został wykonany w podejściu **Vanilla JS / No-framework**, co gwarantu
 
 Aplikacja nie wymaga serwera ani kompilacji węzłów Node.js. 
 
-1. Pobierz plik `blcks.html` (lub skopiuj jego zawartość).
+1. Pobierz plik `index.html` (lub skopiuj jego zawartość).
 2. Zapisz plik na dysku komputera.
 3. Kliknij dwukrotnie w plik `intes.html`, aby otworzyć go w dowolnej nowoczesnej przeglądarce internetowej (Chrome, Firefox, Edge, Safari).
 
